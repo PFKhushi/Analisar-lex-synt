@@ -1,0 +1,4 @@
+def test():
+    int variable;
+    int variable2 = 25;
+    char 

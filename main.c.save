@@ -1,0 +1,170 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include "Scanner.h"
+
+void TestToken();
+void TestScanner();
+
+/*
+const int top = 10;
+int tP = 10;
+*/
+
+int main()
+{
+    /*
+    int inteiro1;
+    int inteiro2 = 5, inteiro3;*/
+
+    TestScanner();
+
+    /*
+
+    printf("inicio test");
+    const Scanner *scanner = CreateScanner();
+
+    if(scanner == NULL) printf("failed");
+
+    printf("\n\nTestando ponteiros no main:\n");
+
+
+    printf("IsDigit:                             %p\n", (void*)scanner->IsDigit);
+    printf("Funcao is_token_digit:               %p\n", (void*)is_token_digit);
+
+    printf("IsLetter:                            %p\n", (void*)scanner->IsLetter);
+    printf("Funcao is_token_letter:              %p\n", (void*)is_token_letter);
+
+    printf("IsMathOperator:                      %p\n", (void*)scanner->IsMathOperator);
+    printf("Funcao is_token_math_operator:       %p\n", (void*)is_token_math_operator);
+
+    printf("IsRelOperator:                       %p\n", (void*)scanner->IsRelOperator);
+    printf("Funcao is_token_relational_operator: %p\n", (void*)is_token_relational_operator);
+
+    printf("NextChar:                            %p\n", (void*)scanner->NextChar);
+    printf("Funcao next_char:                    %p\n", (void*)next_char);
+
+    printf("Back:                                %p\n", (void*)scanner->Back);
+    printf("Funcao back_char_tracker:            %p\n\n\n", (void*)back_char_tracker);
+*/
+
+/*
+    FILE *file_pointer;
+    file_pointer = fopen("test.py", "r");
+
+    char *content;
+    if(file_pointer != NULL) {*/
+        /*printf("\nDeu certo!\n");
+        fgets(content, 1000, file_pointer);
+        printf("\n\n%s\n\n", content);
+        fgets(content, 1000, file_pointer);
+        printf("\n\n%s\n\n", content);
+        fgets(content, 1000, file_pointer);
+        printf("\n\n%s\n\n", content);
+        fgets(content, 1000, file_pointer);
+        printf("\n\n%s\n\n", content);*/
+       /* char c;
+        while((c = fgetc(file_pointer)) != EOF){
+            printf("%c", c);
+            if(c == '\n') printf("----");
+        }
+
+    }*/
+
+
+    return 0;
+}
+
+
+void TestToken(){
+
+    Token *tk = CreateToken();
+    if(!tk) return;
+
+    printf("\n\nTestando ponteiros:\n");
+
+    printf("\nGetText:                %p", tk->GetText);
+    printf("\nFuncao get_token_text:  %p", get_token_text);
+
+    printf("\nSetText:                %p", tk->SetText);
+    printf("\nFuncao set_token_text:  %p", set_token_text);
+
+    printf("\nGetType:                %p", tk->GetType);
+    printf("\nFuncao get_token_type:  %p", get_token_type);
+
+    printf("\nSetType:                %p", tk->SetType);
+    printf("\nFuncao set_token_type:  %p", set_token_type);
+
+    printf("\nToString:               %p", tk->ToString);
+    printf("\nFuncao token_to_string: %p\n\n\n", token_to_string);
+
+    int check = TokenInit(tk, IDENTIFICADOR, "variable");
+
+    printf("Token created? %d\n",check);
+
+    printf("Token ident: %s\n", TOKEN_TYPE_TO_STRING(tk->GetType(tk)));
+
+    printf("Token Text %s\n",tk->GetText(tk));
+
+    printf("%s\n", tk->ToString(tk));
+
+    printf("Token set type: %d\n", tk->SetType(tk, ATRIBUICAO));
+
+    printf("Token set text: %d\n", tk->SetText(tk, "constant"));
+
+    printf("%s\n", tk->ToString(tk));
+
+
+    DestroyToken(tk);
+}
+void TestScanner(){
+
+    Scanner *scanner = CreateScanner();
+    if (!scanner) return;
+
+    printf("\n\nTestando ponteiros:\n");
+
+    printf("ScannerInit:                         %p\n", (void*)scanner->ScannerInit);
+    printf("Funcao scanner_init:                 %p\n", (void*)scanner_init);
+
+    printf("IsDigit:                             %p\n", (void*)scanner->IsDigit);
+    printf("Funcao is_token_digit:               %p\n", (void*)is_token_digit);
+
+    printf("IsLetter:                            %p\n", (void*)scanner->IsLetter);
+    printf("Funcao is_token_letter:              %p\n", (void*)is_token_letter);
+
+    printf("IsMathOperator:                      %p\n", (void*)scanner->IsMathOperator);
+    printf("Funcao is_token_math_operator:       %p\n", (void*)is_token_math_operator);
+
+    printf("IsRelOperator:                       %p\n", (void*)scanner->IsRelOperator);
+    printf("Funcao is_token_relational_operator: %p\n", (void*)is_token_relational_operator);
+
+    printf("AddCharToken:                        %p\n", (void*)scanner->Add);
+    printf("Funcao add_char_token:               %p\n", (void*)next_char);
+
+    printf("NextChar:                            %p\n", (void*)scanner->NextChar);
+    printf("Funcao next_char:                    %p\n", (void*)next_char);
+
+    printf("Back:                                %p\n", (void*)scanner->Back);
+    printf("Funcao back_char_tracker:            %p\n\n\n", (void*)back_char_tracker);
+
+    printf("Is \'p\' a digit: %d\n", scanner->IsDigit('p'));
+    printf("Is \'5\' a digit: %d\n", scanner->IsDigit('5'));
+
+    printf("Is \'p\' a letter: %d\n", scanner->IsLetter('p'));
+    printf("Is \'5\' a letter: %d\n", scanner->IsLetter('5'));
+
+    printf("Is \'T\' a relational operator: %d\n", scanner->IsRelOperator('T'));
+    printf("Is \'>\' a relational operator: %d\n", scanner->IsRelOperator('>'));
+
+    printf("Is \'T\' a relational operator: %d\n", scanner->IsRelOperator('T'));
+    printf("Is \'+\' a math operator: %d\n", scanner->IsMathOperator('+'));
+
+    int test = scanner->ScannerInit(scanner, "ArquivoAnalisar/arquivo_para_analise.c");
+    printf("\n\n Scanner Init: %d\n", test);
+
+    scanner->NextToken(scanner);
+    DestroyScanner(scanner);
+
+
+}
+
