@@ -49,36 +49,39 @@ Token* next_token(Scanner *scanner){
             }else if(scanner->IsDigit(scanner->character)==1){
                 content = scanner->AddCharToken(content, ++content_size, scanner->character);
                 scanner->state = 2;
+            }else if(scanner->IsMathOperator(scanner->character)){
+                return scanner->GetTokenDone(scanner,content,++content_size, OPERADOR_MAT);
             }else{
                 switch(scanner->character){
                 case ' ':
                     break;
                 case '=':
-                    return scanner->GetTokenDone(scanner,content,++content_size, ATRIBUICAO);
+                    //// ERROOU return scanner->GetTokenDone(scanner,content,++content_size, ATRIBUICAO);
                 case ',':
                     return scanner->GetTokenDone(scanner,content,++content_size, SEPARADOR);
                 case ';':
                     return scanner->GetTokenDone(scanner,content,++content_size, FIM_COMANDO);
                 case '\"':
+                    content = scanner->AddCharToken(content, ++content_size, scanner->character);
+                    scanner->state = 4;
                     ////////////////////
                 case '\'':
+                    content = scanner->AddCharToken(content, ++content_size, scanner->character);
+                    scanner->state = 5;
                     ////////////////////
                 case '<':
+                case '>':
+                case '!':
                     ////////////////////
-                case '(':
-                    return scanner->GetTokenDone(scanner, content, ++content_size, PARENTESE_ABRE);
-                case ')':
-                    return scanner->GetTokenDone(scanner, content, ++content_size, PARENTESE_FECHA);
-                case '{':
-                    return scanner->GetTokenDone(scanner, content, ++content_size, CHAVE_ABRE);
-                case '}':
-                    return scanner->GetTokenDone(scanner, content, ++content_size, CHAVE_FECHA);
-                case '[':
-                    return scanner->GetTokenDone(scanner, content, ++content_size, COLCHETE_ABRE);
-                case ']':
-                    return scanner->GetTokenDone(scanner, content, ++content_size, COLCHETE_FECHA);
+                case '(': return scanner->GetTokenDone(scanner, content, ++content_size, PARENTESE_ABRE);
+                case ')': return scanner->GetTokenDone(scanner, content, ++content_size, PARENTESE_FECHA);
+                case '{': return scanner->GetTokenDone(scanner, content, ++content_size, CHAVE_ABRE);
+                case '}': return scanner->GetTokenDone(scanner, content, ++content_size, CHAVE_FECHA);
+                case '[': return scanner->GetTokenDone(scanner, content, ++content_size, COLCHETE_ABRE);
+                case ']': return scanner->GetTokenDone(scanner, content, ++content_size, COLCHETE_FECHA);
                 case '#':
-
+                    content = scanner->AddCharToken(content, ++content_size, scanner->character);
+                    scanner->state = 666;
                 default:
                     return NULL;
                     ////////////////////
@@ -113,7 +116,11 @@ Token* next_token(Scanner *scanner){
                 scanner->Back(scanner);
                 return scanner->GetTokenDone(scanner, content, ++content_size, NUMERO);
             }
-
+        case 5:
+            if(scanner->character=='\''){
+                return scanner->GetTokenDone(scanner, content, ++content_size, ERRO);
+            }
+        case 6:
         default:
             break;
 
@@ -140,6 +147,9 @@ int is_token_math_operator(char character){
 int is_token_relational_operator(char character){
     return character == '>' || character == '<' || character == '=' || character == '!';
 }
+
+int is_token_relational_operator_complement(char character){
+    return character == '>' || character == '<' || character == '=' || character == '!';
 
 char* add_character_token(char *content, int content_size, char character){
 

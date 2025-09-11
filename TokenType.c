@@ -63,7 +63,7 @@ int IS_TOKENTYPE(TokenType type){
     case QUEBRA_LINHA:
     case FIM_COMANDO://////////
     case RETORNO:
-    case ERRO:
+    case ERRO://///////
         return 1;
     default:
         return 0;
