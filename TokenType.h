@@ -1,3 +1,5 @@
+#include <string.h>
+
 typedef enum TokenType{
 
     PREPROCESSADOR,     // #include, #define
@@ -10,6 +12,19 @@ typedef enum TokenType{
 
     BIBLIOTECA,         // <stdio.h>, "my_biblio.h"
 
+    IF,
+    ELSE,
+    WHILE,
+    FOR,
+    RETURN,
+    PRINTF,
+    BREAK,
+    CONTINUE,
+    SWITCH,
+    CASE,
+    DEFAULT,
+
+
     NUMERO,             // 123, 45.6
     STRING,             // "texto"
     CARACTERE,          // 'a'
@@ -20,22 +35,20 @@ typedef enum TokenType{
     CHAVE_FECHA,        // }
     COLCHETE_ABRE,      // [
     COLCHETE_FECHA,     // ]
-/*
-    ASPAS,              // "
-    APOSTROFO,          // '
-*/
+
     OPERADOR_REL,       // ==, !=, <, >, <=, >=
     OPERADOR_MAT,       // +, -, *, /
     ATRIBUICAO,         // =
 
     SEPARADOR,          // ,
+    LABELCOLON,         // :
 
     QUEBRA_LINHA,       // '\n'
     FIM_COMANDO,        // ;
-    RETORNO,            // return
-    ERRO                // Mensagem de erro
+    ERRO
 
 } TokenType;
 
 const char* TOKEN_TYPE_TO_STRING(TokenType type);
 int IS_TOKENTYPE(TokenType type);
+TokenType IS_TOKEN_TOKENTYPE(char *content);

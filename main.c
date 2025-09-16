@@ -4,75 +4,70 @@
 
 void TestToken();
 void TestScanner();
-
-/*
-const int top = 10;
-int tP = 10;
-*/
+///  gcc main.c Scanner.c Token.c TokenType.c -o analisador -Wall -Wextra -std=c11
 
 int main()
 {
-    /*
-    int inteiro1;
-    int inteiro2 = 5, inteiro3;*/
 
-    TestScanner();
+    char *preprocessadores[] = {
+        "#include",
+        "#define",
+        NULL
+    };
+    char *tipos[] = {
+        "int",
+        "char",
+        "float",
+        "double",
+        NULL
+    };
+    char *qualificadores[] = {
+        "const",
+        NULL
+    };
+    char *bibliotecas[] = {
+        "<stdlib.h>",
+        "<stdio.h>",
+        NULL
+    };
 
-    /*
+    Scanner *scanner = CreateScanner(tipos, preprocessadores, qualificadores, bibliotecas);
+    if (!scanner) return 0;
 
-    printf("inicio test");
-    const Scanner *scanner = CreateScanner();
+    scanner->ScannerInit(scanner, "ArquivoAnalisar/arquivo_para_analise.c");
 
-    if(scanner == NULL) printf("failed");
-
-    printf("\n\nTestando ponteiros no main:\n");
-
-
-    printf("IsDigit:                             %p\n", (void*)scanner->IsDigit);
-    printf("Funcao is_token_digit:               %p\n", (void*)is_token_digit);
-
-    printf("IsLetter:                            %p\n", (void*)scanner->IsLetter);
-    printf("Funcao is_token_letter:              %p\n", (void*)is_token_letter);
-
-    printf("IsMathOperator:                      %p\n", (void*)scanner->IsMathOperator);
-    printf("Funcao is_token_math_operator:       %p\n", (void*)is_token_math_operator);
-
-    printf("IsRelOperator:                       %p\n", (void*)scanner->IsRelOperator);
-    printf("Funcao is_token_relational_operator: %p\n", (void*)is_token_relational_operator);
-
-    printf("NextChar:                            %p\n", (void*)scanner->NextChar);
-    printf("Funcao next_char:                    %p\n", (void*)next_char);
-
-    printf("Back:                                %p\n", (void*)scanner->Back);
-    printf("Funcao back_char_tracker:            %p\n\n\n", (void*)back_char_tracker);
-*/
-
-/*
-    FILE *file_pointer;
-    file_pointer = fopen("test.py", "r");
-
-    char *content;
-    if(file_pointer != NULL) {*/
-        /*printf("\nDeu certo!\n");
-        fgets(content, 1000, file_pointer);
-        printf("\n\n%s\n\n", content);
-        fgets(content, 1000, file_pointer);
-        printf("\n\n%s\n\n", content);
-        fgets(content, 1000, file_pointer);
-        printf("\n\n%s\n\n", content);
-        fgets(content, 1000, file_pointer);
-        printf("\n\n%s\n\n", content);*/
-       /* char c;
-        while((c = fgetc(file_pointer)) != EOF){
-            printf("%c", c);
-            if(c == '\n') printf("----");
+    Token *tk;
+    do{
+        tk = scanner->NextToken(scanner);
+        if(tk != NULL){
+            printf(tk->ToString(tk));
+            printf("\n");
+            DestroyToken(tk);
+        }else{
+            printf("NULL");
         }
+    }while(tk != NULL);
 
-    }*/
+    DestroyScanner(scanner);
 
 
     return 0;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 void TestToken(){
@@ -117,10 +112,31 @@ void TestToken(){
     DestroyToken(tk);
 }
 void TestScanner(){
+    char *preprocessadores[] = {
+        "#include",
+        "#define",
+        NULL
+    };
+    char *tipos[] = {
+        "int",
+        "char",
+        "float",
+        "double",
+        NULL
+    };
+    char *qualificadores[] = {
+        "const",
+        NULL
+    };
+    char *bibliotecas[] = {
+        "<stdlib.h>",
+        "<stdio.h>",
+        NULL
+    };
 
-    Scanner *scanner = CreateScanner();
+    Scanner *scanner = CreateScanner(tipos, preprocessadores, qualificadores, bibliotecas);
     if (!scanner) return;
-
+    /*//printf("\n\nCOMECOU DE NOVO");
     printf("\n\nTestando ponteiros:\n");
 
     printf("ScannerInit:                         %p\n", (void*)scanner->ScannerInit);
@@ -158,12 +174,31 @@ void TestScanner(){
 
     printf("Is \'T\' a relational operator: %d\n", scanner->IsRelOperator('T'));
     printf("Is \'+\' a math operator: %d\n", scanner->IsMathOperator('+'));
+*/
+    //printf("\n\n\n");
+    //print_list_reservadas(scanner, PREPROCESSADOR);
+    //print_list_reservadas(scanner, TIPO);
+    //print_list_reservadas(scanner, QUALIFICADOR);
+    //printf("test");
 
-    int test = scanner->ScannerInit(scanner, "ArquivoAnalisar/arquivo_para_analise.c");
-    printf("\n\n Scanner Init: %d\n", test);
+    scanner->ScannerInit(scanner, "ArquivoAnalisar/arquivo_para_analise.c");
+    //printf("\n\n Scanner Init: %d\n", test);
 
-    scanner->NextToken(scanner);
+    Token *tk;
+    do{
+        tk = scanner->NextToken(scanner);
+        if(tk != NULL){
+            printf(tk->ToString(tk));
+            printf("\n");
+            //printf("\n\n\n|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||\n\n\n");
+            DestroyToken(tk);
+        }else{
+            printf("NULL");
+        }
+    }while(tk != NULL);
+
     DestroyScanner(scanner);
+
 
 
 }

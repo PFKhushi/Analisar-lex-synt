@@ -74,21 +74,6 @@ const Token* CreateToken(){
     tk->SetType     = set_token_type;
     tk->ToString    = token_to_string;
 
-    printf("\nGetText:                %p", tk->GetText);
-    printf("\nFuncao get_token_text:  %p", get_token_text);
-
-    printf("\nSetText:                %p", tk->SetText);
-    printf("\nFuncao set_token_text:  %p", set_token_text);
-
-    printf("\nGetType:                %p", tk->GetType);
-    printf("\nFuncao get_token_type:  %p", get_token_type);
-
-    printf("\nSetType:                %p", tk->SetType);
-    printf("\nFuncao set_token_type:  %p", set_token_type);
-
-    printf("\nToString:               %p", tk->ToString);
-    printf("\nFuncao token_to_string: %p", token_to_string);
-
     return tk;
 }
 

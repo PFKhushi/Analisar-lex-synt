@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <stdlib.h>
+#include <stsdlib.h>
 
 
 int main()
@@ -15,6 +15,18 @@ int main()
 
     printf("Test foda");
 
+    for(int i=0; i<=1; i+1){
+        printf("eu sou sinistro")
+    }
+    5ir3.56;
+    int p;
+    while(p>=5){
+        switch(p){
+        case 0:
+        printf("%d",5);
+        }
+    }
+
 
 }
-
+5ir3.56

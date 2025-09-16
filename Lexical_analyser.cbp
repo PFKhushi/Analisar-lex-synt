@@ -31,9 +31,26 @@
 		<Compiler>
 			<Add option="-Wall" />
 		</Compiler>
+		<Unit filename="Scanner.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Scanner.h" />
+		<Unit filename="Token.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="Token.h" />
+		<Unit filename="TokenType.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="TokenType.h" />
 		<Unit filename="main.c">
 			<Option compilerVar="CC" />
 		</Unit>
+		<Unit filename="runner.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="test.py" />
+		<Unit filename="test.txt" />
 		<Extensions>
 			<lib_finder disable_auto="1" />
 		</Extensions>
