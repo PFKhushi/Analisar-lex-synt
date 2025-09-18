@@ -8,6 +8,8 @@ void TestScanner();
 
 int main()
 {
+    /// Maria Vitório
+    /// Pedro Firmino
 
     char *preprocessadores[] = {
         "#include",

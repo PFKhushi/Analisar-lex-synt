@@ -13,10 +13,10 @@ int main()
 
     double drobo;
 
-    printf("Test foda");
+    printf("eu sou sinistro");
 
     for(int i=0; i<=1; i+1){
-        printf("eu sou sinistro")
+        printf("melhor q teu amigo")
     }
     5ir3.56;
     int p;
