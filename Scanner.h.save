@@ -1,12 +1,15 @@
+#ifndef SCANNER_H
+#define SCANNER_H
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include "Token.h"
 
-
 typedef struct Scanner{
-    int state, inner_state,qtd_tipos, qtd_preprocessadores, qtd_qualificadores, linha, coluna;
+    int state, inner_state,qtd_tipos, qtd_preprocessadores, qtd_qualificadores, qtd_bibliotecas, linha, coluna;
     FILE *file_pointer;
-    char character, previous_character, **tipos, **preprocessadores, **qualificadores;
+    char character, previous_character, **tipos, **preprocessadores, **qualificadores, **bibliotecas;
 
     int     (*ScannerInit)(struct Scanner *scanner, char *file_name);
     Token*  (*NextToken)(struct Scanner *scanner);
@@ -24,7 +27,7 @@ typedef struct Scanner{
 } Scanner;
 
 
-const Scanner* CreateScanner(char** tipos, char** preprocessadores, char** qualificadores);
+Scanner* CreateScanner(char** tipos, char** preprocessadores, char** qualificadores, char** bibliotecas);
 void DestroyScanner(Scanner *scanner);
 Token* next_token(Scanner *scanner);
 int scanner_init(Scanner *scanner, char* file_name);
@@ -40,3 +43,6 @@ void next_char(Scanner *scanner);
 void back_char_tracker(Scanner *scanner);
 void print_list_reservadas(Scanner *scanner, TokenType tipo);
 void alocar_palavras_reservadas(Scanner *scanner, char **palavras, TokenType tipo);
+void unread_token(Scanner *scanner, Token *token)
+
+#endif // SCANNER_H

@@ -1,3 +1,5 @@
+#include "Token.h"
+/*
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -16,7 +18,7 @@ typedef struct Token {
 
 
 } Token;
-
+*/
 const char* get_token_text(Token *token){
     return token->text;
 }
@@ -64,7 +66,7 @@ int TokenInit(Token *token, TokenType type, char *text){
     return 1;
 }
 
-const Token* CreateToken(){
+Token* CreateToken(){
     Token *tk = malloc(sizeof(Token));
     if(!tk) return NULL;
 

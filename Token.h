@@ -1,6 +1,10 @@
-//#define TOKEN_H
+#ifndef TOKEN_H
+#define TOKEN_H
 
 #include "TokenType.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 
 // Declaração da estrutura Token
 typedef struct Token {
@@ -24,10 +28,10 @@ int IS_TOKENTYPE(TokenType type);
 const char* TokenTypeToString(TokenType type);
 
 // Funções dos ponteiros (caso queira usar diretamente)
-const char* get_token_text(Token *token, int state);
+const char* get_token_text(Token *token);
 int set_token_type(Token *token, TokenType type);
 TokenType get_token_type(Token *token);
 int set_token_text(Token *token, char *text);
 char* token_to_string(Token *token);
 
-//#endif // TOKEN_H
+#endif // TOKEN_H

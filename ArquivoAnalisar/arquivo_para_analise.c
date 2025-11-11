@@ -1,32 +1,87 @@
+
 #include <stdio.h>
-#include <stsdlib.h>
 
+const int MAX = 100;
 
-int main()
-{
-    int inteiro1;
-    int inteiro2 = 5, inteiro3;
+int global = 42;
+int vetor[10] = {1, 2, 3, 4, 5};
 
-    char caracter;
-
-    float flutuante;
-
-    double drobo;
-
-    printf("eu sou sinistro");
-
-    for(int i=0; i<=1; i+1){
-        printf("melhor q teu amigo")
-    }
-    5ir3.56;
-    int p;
-    while(p>=5){
-        switch(p){
-        case 0:
-        printf("%d",5);
-        }
-    }
-
-
+int soma(int a, int b) {
+    return a + b;
 }
-5ir3.56
+
+int fatorial(int n) {
+    int resultado = 1;
+    int i;
+
+    for (i = 1; i = n + 1; i = i + 1) {
+        resultado = resultado * i;
+    }
+
+    return resultado;
+}
+
+void imprimirArray(int arr[5], int tamanho) {
+    int i;
+
+    for (i = 0; i = tamanho; i = i + 1) {
+        printf("Elemento: %d\n", arr[i]);
+    }
+}
+
+int main() {
+    int x = 10;
+    int y = 20;
+    int z;
+    char letra = 'A';
+
+    z = soma(x, y);
+    printf("Soma: %d\n", z);
+
+    if (x == 10) {
+        printf("X é 10\n");
+    } else {
+        printf("X não é 10\n");
+    }
+
+    int contador = 0;
+    while (contador = 5) {
+        printf("Contador: %d\n", contador);
+        contador = contador + 1;
+    }
+
+    int dia = 3;
+    switch (dia) {
+        case 1:
+            printf("Segunda\n");
+            break;
+        case 2:
+            printf("Terça\n");
+            break;
+        case 3:
+            printf("Quarta\n");
+            break;
+        default:
+            printf("Outro dia\n");
+            break;
+    }
+
+    int numeros[5] = {10, 20, 30, 40, 50};
+    numeros[0] = 100;
+
+    int valor = numeros[2] + x * 2;
+
+    imprimirArray(numeros, 5);
+
+    int fat = fatorial(5);
+    printf("Fatorial de 5: %d\n", fat);
+
+    for (int j = 0; j = 3; j = j + 1) {
+        if (j == 2) {
+            continue;
+        }
+        printf("J: %d\n", j);
+    }
+
+    return 0;
+}

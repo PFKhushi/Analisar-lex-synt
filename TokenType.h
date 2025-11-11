@@ -1,3 +1,6 @@
+#ifndef TOKENTYPE_H
+#define TOKENTYPE_H
+
 #include <string.h>
 
 typedef enum TokenType{
@@ -52,3 +55,5 @@ typedef enum TokenType{
 const char* TOKEN_TYPE_TO_STRING(TokenType type);
 int IS_TOKENTYPE(TokenType type);
 TokenType IS_TOKEN_TOKENTYPE(char *content);
+
+#endif // TOKENTYPE_H

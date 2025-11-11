@@ -1,0 +1,1665 @@
+//#include "Scanner.h"
+#include "Parser.h"
+
+//#include <stdlib.h>
+//#include <stdio.h>
+
+/*
+
+typedef struct Parser{
+    Scanner *scnr;
+    Token *tk;
+
+    int (*ParserInit)(struct Parser *prsr, char *arquivo);
+
+}Parser;*/
+
+void print_error(char *erro, Scanner *scanner, Token * token){
+    char *erro_message;
+    char *token_str = token->ToString(token);
+    int tamanho_message = strlen(erro)+strlen(token_str);
+
+    erro_message = malloc(tamanho_message + 100);
+    if (!erro_message){
+        fprintf(stderr, "Erro no buffer de erro c:\n");
+        return;
+    }
+    sprintf(erro_message, "\n\nErro: %s \n%s \nLinha: %d \nColuna: %d\n\n", erro, token_str, scanner->linha, scanner->coluna);
+    fprintf(stderr, erro_message);
+    free(erro_message);
+}
+
+int comecar_analise(Parser *parser){
+    return comeco(parser);
+}
+
+int parser_next_token(Parser *parser){
+    if(parser->tk) DestroyToken(parser->tk);
+
+    printf("\nPegando o proximo token\n");
+    parser->tk = parser->scnr->NextToken(parser->scnr);
+    printf(parser->tk->ToString(parser->tk));
+    printf("\nProximo token em maos\n");
+
+    printf("\nVerificando se ha um token\n");
+    if(!parser->tk){
+        print_error("Token NULL", parser->scnr, parser->tk);
+        return 0;
+    }
+    printf("\nConfirmado que ha um token\n");
+    return 1;
+}
+
+int comeco(Parser *parser){
+
+    printf("\nINICIANDO: comeco\n");
+    if(parser_next_token(parser) == 0) return 0;
+
+    TokenType tktp = parser->tk->GetType(parser->tk);
+    printf("\nAnalisando token\n");
+    switch(tktp){
+
+        case PREPROCESSADOR:
+            printf("\nPREPROCESSADOR encontrado\n");
+            if(processar(parser) == 0) return 0;
+            break;
+        case QUALIFICADOR:
+            printf("\nQUALIFICADOR encontrado\n");
+            if(declaracao_const(parser) == 0) return 0;
+            break;
+        case TIPO:
+            printf("\nTIPO encontrado\n");
+            if(declaracao_ou_funcao(parser)==0) return 0;
+            break;
+        default:
+            print_error("Esperava-se um PREPROCESSADO, um QUILIFICADOR ou um TIPO", parser->scnr, parser->tk);
+            return 0;
+
+    }
+    printf("\nToken correto\n");
+    printf("\nFINALIZANDO: comeco\n");
+    return 1;
+}
+
+int processar(Parser *parser){
+    printf("\nINICIANDO: processar\n");
+    if(parser_next_token(parser) == 0) return 0;
+
+    TokenType tktp = parser->tk->GetType(parser->tk);
+
+    printf("\nAnalisando token\n");
+    switch(tktp){
+    case BIBLIOTECA:
+        printf("\nBIBLIOTECA encontrada\n");
+        break;
+    case IDENTIFICADOR:
+        printf("\nIDENTIFICADOR encontrado\n");
+        if(valor(parser) == 0) return 0;
+        break;
+    default:
+        print_error("Esperava-se uma BIBLIOTECA ou um IDENTIFICADOR", parser->scnr, parser->tk);
+        return 0;
+    }
+    if(comeco(parser) == 0) return 0;
+    printf("\nToken correto\n");
+
+    printf("\nFINALIZANDO: processar\n");
+    return 1;
+}
+
+int valor(Parser *parser){
+
+    printf("\nINICIANDO: valor\n");
+
+    if(parser_next_token(parser) == 0) return 0;
+
+    TokenType tktp = parser->tk->GetType(parser->tk);
+    printf("\nAnalisando token\n");
+    switch(tktp){
+        case NUMERO:
+            printf("\nNUMERO encontrado\n");
+            break;
+        case STRING:
+            printf("\nSTRING encontrado\n");
+            break;
+        case CARACTERE:
+            printf("\nCARACTERE encontrado\n");
+            break;
+        case IDENTIFICADOR:
+            printf("\nIDENTIFICADOR encontrado\n");
+            break;
+        default:
+            print_error("Esperava-se um NUMERO, uma STRING, um CARACTER ou um IDENTIFICADOR", parser->scnr, parser->tk);
+            return 0;
+    }
+    printf("\nToken correto\n");
+
+    printf("\nFINALIZANDO: valor\n");
+    return 1;
+}
+
+int declaracao_const(Parser *parser){
+
+    printf("\nINICIANDO: declaracao_const\n");
+
+    if(parser_next_token(parser) == 0) return 0;
+    printf("\nAnalisando token\n");
+    if(parser->tk->GetType(parser->tk) != TIPO){
+        print_error("Esperava-se um TIPO", parser->scnr, parser->tk);
+        return 0;
+    }
+    printf("\nToken correto\n");
+
+    if(parser_next_token(parser) == 0) return 0;
+    printf("\nAnalisando token\n");
+    if(parser->tk->GetType(parser->tk) != IDENTIFICADOR){
+        print_error("Esperava-se um IDENTIFICADOR", parser->scnr, parser->tk);
+        return 0;
+    }
+    printf("\nToken correto\n");
+
+    if(parser_next_token(parser) == 0) return 0;
+    printf("\nAnalisando token\n");
+    if(parser->tk->GetType(parser->tk) != ATRIBUICAO){
+        print_error("Esperava-se uma ATRIBUICAO", parser->scnr, parser->tk);
+        return 0;
+    }
+    printf("\nToken correto\n");
+
+    if(valor(parser) == 0) return 0;
+
+    if(parser_next_token(parser) == 0) return 0;
+    printf("\nAnalisando token\n");
+    if(parser->tk->GetType(parser->tk) != FIM_COMANDO){
+        print_error("Esperava-se um FIM_COMANDO", parser->scnr, parser->tk);
+        return 0;
+    }
+    printf("\nToken correto\n");
+
+    if(comeco(parser) == 0) return 0;
+
+    printf("\nFINALIZANDO: declaracao_const\n");
+
+    return 1;
+}
+
+int declaracao_ou_funcao(Parser *parser){
+    printf("\nINICIANDO: declaracao_ou_funcao\n");
+    if(parser_next_token(parser) == 0) return 0;
+
+    if(parser->tk->GetType(parser->tk)!=IDENTIFICADOR){
+        print_error("Esperava-se um IDENTIFICADOR", parser->scnr, parser->tk);
+        return 0;
+    }
+    if(apos_identificador(parser)==0) return 0;
+
+    printf("\nFINALIZANDO: declaracao_ou_funcao\n");
+    return 1;
+}
+
+int apos_identificador(Parser *parser){
+    printf("\nINICIANDO: apos_identificador\n");
+
+    if(parser_next_token(parser) == 0) return 0;
+
+    TokenType tktp = parser->tk->GetType(parser->tk);
+
+    printf("\nAnalisando token\n");
+    switch(tktp){
+
+        case PARENTESE_ABRE:
+            printf("\nPARENTESE_ABRE encontrado\n");
+
+            if(paramentros(parser)==0) return 0;
+
+            if(parser_next_token(parser) == 0) return 0;
+
+            if(parser->tk->GetType(parser->tk) != PARENTESE_FECHA){
+                print_error("Esperava-se um PARENTESE_FECHA", parser->scnr, parser->tk);
+                return 0;
+            }
+            printf("\nPARENTESE_FECHA encontrado\n");
+            if(corpo_funcao(parser)==0)return 0;
+
+            break;
+
+        case COLCHETE_ABRE:
+            printf("\nCOLCHETE_ABRE encontrado\n");
+
+            if(parser_next_token(parser) == 0) return 0;
+            if(parser->tk->GetType(parser->tk) != NUMERO){
+                print_error("Esperava-se um NUMERO", parser->scnr, parser->tk);
+                return 0;
+            }
+            printf("\nNUMERO encontrado\n");
+
+            if(parser_next_token(parser) == 0) return 0;
+
+            if(parser->tk->GetType(parser->tk) != COLCHETE_FECHA){
+                print_error("Esperava-se um COLCHETE_FECHA", parser->scnr, parser->tk);
+                return 0;
+            }
+            printf("\nCOLCHETE_FECHA encontrado\n");
+
+            if(inicializacao_array(parser)==0) return 0;
+
+            break;
+
+        case FIM_COMANDO:
+            printf("\nFIM_COMANDO encontrado\n");
+
+            break;
+        default:
+            parser->scnr->UnreadToken(parser->scnr, parser->tk);
+            if(inicializacao(parser)==0) return 0;
+
+    }
+    if(comeco(parser)==0) return 0;
+
+    printf("\nFINALIZANDO: apos_identificador\n");
+    return 1;
+}
+
+int corpo_funcao(Parser *parser){
+    printf("\nINICIANDO: corpo_funcao\n");
+
+    if(parser_next_token(parser) == 0) return 0;
+
+    if(parser->tk->GetType(parser->tk) != CHAVE_ABRE){
+        print_error("Esperava-se um CHAVE_ABRE", parser->scnr, parser->tk);
+        return 0;
+    }
+    printf("\nCHAVE_ABRE encontrado\n");
+
+    if(bloco_comandos(parser)==0) return 0;
+
+    if(parser_next_token(parser) == 0) return 0;
+
+    if(parser->tk->GetType(parser->tk) != CHAVE_FECHA){
+        print_error("Esperava-se 1um CHAVE_FECHA", parser->scnr, parser->tk);
+        return 0;
+    }
+    printf("\nCHAVE_FECHA encontrado\n");
+
+    printf("\nFINALIZANDO: corpo_funcao\n");
+    return 1;
+}
+
+int bloco_comandos(Parser *parser){
+    printf("\nINICIANDO: bloco_comandos\n");
+
+    if(parser_next_token(parser) == 0) return 0;
+
+    TokenType tktp = parser->tk->GetType(parser->tk);
+
+    printf("\nAnalisando token\n");
+    switch(tktp){
+        case TIPO:
+            printf("\nTIPO encontrado\n");
+            if(declaracao_local(parser)==0) return 0;
+            break;
+
+        case QUALIFICADOR:
+            printf("\nQUALIFICADOR encontrado\n");
+            if(declaracao_local_const(parser)==0) return 0;
+            break;
+        case IDENTIFICADOR:
+            printf("\nIDENTIFICADOR encontrado\n");
+            if(comando_identificador(parser)==0) return 0;
+            break;
+        case IF:
+            printf("\nIF encontrado\n");
+            if(comando_if(parser)==0) return 0;
+            break;
+        case WHILE:
+            printf("\nWHILE encontrado\n");
+            if(comando_while(parser)==0) return 0;
+            break;
+        case FOR:
+            printf("\nFOR encontrado\n");
+            if(comando_for(parser)==0) return 0;
+            break;
+        case SWITCH:
+            printf("\nSWITCH encontrado\n");
+            if(comando_switch(parser)==0) return 0;
+            break;
+        case RETURN:
+            printf("\nRETURN encontrado\n");
+            if(comando_return(parser)==0) return 0;
+            break;
+        case BREAK:
+            printf("\nBREAK encontrado\n");
+            if(parser_next_token(parser) == 0) return 0;
+
+            if(parser->tk->GetType(parser->tk) != FIM_COMANDO){
+                print_error("Esperava-se um FIM_COMANDO", parser->scnr, parser->tk);
+                return 0;
+            }
+            printf("\nFIM_COMANDO encontrado\n");
+            break;
+        case CONTINUE:
+            printf("\nCONTINUE encontrado\n");
+            if(parser->tk->GetType(parser->tk) != FIM_COMANDO){
+                print_error("Esperava-se um FIM_COMANDO", parser->scnr, parser->tk);
+                return 0;
+            }
+            printf("\nFIM_COMANDO encontrado\n");
+            break;
+        case PRINTF:
+            printf("\nPRINTF encontrado\n");
+            if(chamada_printf(parser)==0) return 0;
+            break;
+        default:
+            print_error("Esperava-se um TIPO, um QUALIFICADOR, um IDENTIFICADOR, um IF, um WHILE, um FOR, um SWITCH, um RETURN, um BREAK, um CONTINUE ou um PRINTF", parser->scnr, parser->tk);
+            return 0;
+    }
+    if(bloco_comandos_fim(parser)==0) return 0;
+    printf("\nFINALIZANDO: bloco_comandos\n");
+    return 1;
+}
+
+int bloco_comandos_fim(Parser *parser){
+    printf("\nINICIANDO: bloco_comandos_fim\n");
+
+    if(parser_next_token(parser) == 0) return 0;
+
+    TokenType tktp = parser->tk->GetType(parser->tk);
+
+    printf("\nAnalisando token\n");
+    switch(tktp){
+        case TIPO:
+        case QUALIFICADOR:
+        case IDENTIFICADOR:
+        case IF:
+        case WHILE:
+        case FOR:
+        case SWITCH:
+        case RETURN:
+        case BREAK:
+        case CONTINUE:
+        case PRINTF:
+        case CHAVE_FECHA:
+            parser->scnr->UnreadToken(parser->scnr, parser->tk);
+            return 1;
+        default:
+            print_error("Esperava-se um TIPO, um QUALIFICADOR, um IDENTIFICADOR, um IF, um WHILE, um FOR, um SWITCH, um RETURN, um BREAK, um CONTINUE ou um PRINTF", parser->scnr, parser->tk);
+            return 0;
+    }
+    unread_token(parser->scnr, parser->tk);
+    if(bloco_comandos(parser)==0) return 0;
+
+    printf("\nFINALIZANDO: bloco_comandos_fim\n");
+    return 1;
+}
+
+int declaracao_local(Parser *parser){
+    printf("\nINICIANDO: declaracao_local\n");
+
+    if(parser_next_token(parser) == 0) return 0;
+
+    if(parser->tk->GetType(parser->tk) != IDENTIFICADOR){
+        print_error("Esperava-se um IDENTIFICADOR", parser->scnr, parser->tk);
+        return 0;
+    }
+    printf("\nIDENTIFICADOR encontrado\n");
+
+    if(declaracao_local_resto(parser)==0) return 0;
+
+    printf("\nFINALIZANDO: declaracao_local\n");
+    return 1;
+}
+
+int declaracao_local_resto(Parser *parser){
+    printf("\nINICIANDO: declaracao_local_resto\n");
+
+    if(parser_next_token(parser) == 0) return 0;
+
+    TokenType tktp = parser->tk->GetType(parser->tk);
+
+    printf("\nAnalisando token\n");
+    switch(tktp){
+        case COLCHETE_ABRE:
+            printf("\nCOLCHETE_ABRE encontrado\n");
+
+            if(parser_next_token(parser) == 0) return 0;
+
+            if(parser->tk->GetType(parser->tk) != NUMERO){
+                print_error("Esperava-se um NUMERO", parser->scnr, parser->tk);
+                return 0;
+            }
+            printf("\nNUMERO encontrado\n");
+
+            if(parser_next_token(parser) == 0) return 0;
+
+            if(parser->tk->GetType(parser->tk) != COLCHETE_FECHA){
+                print_error("Esperava-se um COLCHETE_FECHA", parser->scnr, parser->tk);
+                return 0;
+            }
+            printf("\nCOLCHETE_FECHA encontrado\n");
+
+            if(inicializacao_array(parser)==0) return 0;
+
+        default:
+            parser->scnr->UnreadToken(parser->scnr, parser->tk);
+            if(inicializacao(parser)==0) return 0;
+    }
+    printf("\nFINALIZANDO: declaracao_local_resto\n");
+    return 1;
+}
+
+int declaracao_local_const(Parser *parser){
+    printf("\nINICIANDO: declaracao_local_const\n");
+
+    if(parser_next_token(parser) == 0) return 0;
+
+    if(parser->tk->GetType(parser->tk) != TIPO){
+        print_error("Esperava-se um TIPO", parser->scnr, parser->tk);
+        return 0;
+    }
+    printf("\nTIPO encontrado\n");
+
+    if(parser_next_token(parser) == 0) return 0;
+
+    if(parser->tk->GetType(parser->tk) != IDENTIFICADOR){
+        print_error("Esperava-se um IDENTIFICADOR", parser->scnr, parser->tk);
+        return 0;
+    }
+    printf("\nIDENTIFICADOR encontrado\n");
+
+    if(parser_next_token(parser) == 0) return 0;
+
+    if(parser->tk->GetType(parser->tk) != ATRIBUICAO){
+        print_error("Esperava-se um ATRIBUICAO", parser->scnr, parser->tk);
+        return 0;
+    }
+    printf("\nATRIBUICAO encontrado\n");
+
+    if(valor(parser)==0) return 0;
+
+    if(parser_next_token(parser) == 0) return 0;
+
+    if(parser->tk->GetType(parser->tk) != FIM_COMANDO){
+        print_error("Esperava-se um FIM_COMANDO", parser->scnr, parser->tk);
+        return 0;
+    }
+    printf("\nFIM_COMANDO encontrado\n");
+
+    printf("\nFINALIZANDO: declaracao_local_const\n");
+    return 1;
+}
+
+int comando_identificador(Parser *parser){
+    printf("\nINICIANDO: comando_identificador\n");
+
+    if(parser_next_token(parser) == 0) return 0;
+
+    TokenType tktp = parser->tk->GetType(parser->tk);
+
+    printf("\nAnalisando token\n");
+    switch(tktp){
+        case ATRIBUICAO:
+            printf("\nATRIBUICAO encontrada\n");
+            if(expressao(parser)==0) return 0;
+            break;
+        case COLCHETE_ABRE:
+            printf("\nCOLCHETE_ABRE encontrado\n");
+            if(parser_next_token(parser) == 0) return 0;
+
+            if(parser->tk->GetType(parser->tk) != NUMERO){
+                print_error("Esperava-se um NUMERO", parser->scnr, parser->tk);
+                return 0;
+            }
+            printf("\nNUMERO encontrado\n");
+
+            if(parser_next_token(parser) == 0) return 0;
+
+            if(parser->tk->GetType(parser->tk) != COLCHETE_FECHA){
+                print_error("Esperava-se um COLCHETE_FECHA", parser->scnr, parser->tk);
+                return 0;
+            }
+            printf("\nCOLCHETE_FECHA encontrado\n");
+
+            if(parser_next_token(parser) == 0) return 0;
+
+            if(parser->tk->GetType(parser->tk) != ATRIBUICAO){
+                print_error("Esperava-se um ATRIBUICAO", parser->scnr, parser->tk);
+                return 0;
+            }
+            printf("\nATRIBUICAO encontrado\n");
+
+            if(expressao(parser)==0) return 0;
+
+            break;
+        case PARENTESE_ABRE:
+            printf("\nPARENTESE_ABRE encontrado\n");
+            if(argumentos(parser)==0) return 0;
+
+            if(parser_next_token(parser) == 0) return 0;
+
+            if(parser->tk->GetType(parser->tk) != PARENTESE_FECHA){
+                print_error("Esperava-se um PARENTESE_FECHA", parser->scnr, parser->tk);
+                return 0;
+            }
+            printf("\nPARENTESE_FECHA encontrado\n");
+
+            if(parser_next_token(parser) == 0) return 0;
+
+            if(parser->tk->GetType(parser->tk) != FIM_COMANDO){
+                print_error("Esperava-se um FIM_COMANDO", parser->scnr, parser->tk);
+                return 0;
+            }
+            printf("\nFIM_COMANDO encontrado\n");
+
+            break;
+        default:
+            print_error("Esperava-se uma ATRIBUICAO, um COLCHETE_ABRE ou um PARENTESE_ABRE", parser->scnr, parser->tk);
+            return 0;
+    }
+
+    if(parser_next_token(parser) == 0) return 0;
+
+    if(parser->tk->GetType(parser->tk) != FIM_COMANDO){
+        print_error("Esperava-se um FIM_COMANDO", parser->scnr, parser->tk);
+        return 0;
+    }
+    printf("\nFIM_COMANDO encontrado\n");
+
+    printf("\nFINALIZANDO: comando_identificador\n");
+    return 1;
+}
+
+int comando_if(Parser *parser){
+    printf("\nINICIANDO: comando_if\n");
+
+    if(parser_next_token(parser) == 0) return 0;
+
+    if(parser->tk->GetType(parser->tk) != PARENTESE_ABRE){
+        print_error("Esperava-se um PARENTESE_ABRE", parser->scnr, parser->tk);
+        return 0;
+    }
+    printf("\nPARENTESE_ABRE encontrado\n");
+
+    if(condicao(parser) == 0) return 0;
+
+    if(parser_next_token(parser) == 0) return 0;
+
+    if(parser->tk->GetType(parser->tk) != PARENTESE_FECHA){
+        print_error("Esperava-se um PARENTESE_FECHA", parser->scnr, parser->tk);
+        return 0;
+    }
+    printf("\nPARENTESE_FECHA encontrado\n");
+
+    if(parser_next_token(parser) == 0) return 0;
+
+    if(parser->tk->GetType(parser->tk) != CHAVE_ABRE){
+        print_error("Esperava-se um CHAVE_ABRE", parser->scnr, parser->tk);
+        return 0;
+    }
+    printf("\nCHAVE_ABRE encontrado\n");
+
+    if(comando(parser) == 0) return 0;
+
+    if(parser_next_token(parser) == 0) return 0;
+
+    if(parser->tk->GetType(parser->tk) != CHAVE_FECHA){
+        print_error("Esperava-se 2um CHAVE_FECHA", parser->scnr, parser->tk);
+        return 0;
+    }
+    printf("\nCHAVE_FECHA encontrado\n");
+
+    if(comando_else(parser)==0) return 0;
+
+
+    printf("\nFINALIZANDO: comando_if\n");
+    return 1;
+}
+
+int comando_else(Parser *parser){
+    printf("\nINICIANDO: comando_else\n");
+
+    if(parser_next_token(parser) == 0) return 0;
+
+    if(parser->tk->GetType(parser->tk) != ELSE){
+        print_error("Esperava-se um ELSE", parser->scnr, parser->tk);
+        return 0;
+    }
+    printf("\nELSE encontrado\n");
+
+    if(comando_else_aux(parser)==0) return 0;
+
+    printf("\nFINALIZANDO: comando_else\n");
+    return 1;
+}
+
+int comando_else_aux(Parser *parser){
+
+    printf("\nINICIANDO: comando_else_aux\n");
+
+    if(parser_next_token(parser) == 0) return 0;
+
+    if(parser->tk->GetType(parser->tk) == IF){
+        if(comando_if(parser)==0) return 0;
+        printf("\nIF encontrado\n");
+        return 1;
+    }
+    parser->scnr->UnreadToken(parser->scnr, parser->tk);
+    if(comando_else_fim(parser)==0) return 0;
+
+    printf("\nFINALIZANDO: comando_else_aux\n");
+    return 1;
+}
+
+int comando_else_fim(Parser *parser){
+    printf("\nINICIANDO: comando_else_fim\n");
+
+    if(parser_next_token(parser) == 0) return 0;
+
+    if(parser->tk->GetType(parser->tk) != CHAVE_ABRE){
+        print_error("Esperava-se um CHAVE_ABRE", parser->scnr, parser->tk);
+        return 0;
+    }
+    printf("\nCHAVE_ABRE encontrado\n");
+
+    if(comando(parser)==0) return 0;
+
+    printf("\nFINALIZANDO: comando_else_fim\n");
+    return 1;
+
+}
+
+int comando(Parser *parser){
+    printf("\nINICIANDO: comando\n");
+
+    if(parser_next_token(parser) == 0) return 0;
+
+    TokenType tktp = parser->tk->GetType(parser->tk);
+
+    printf("\nAnalisando token\n");
+    switch(tktp){
+        case TIPO:
+            if(declaracao_local(parser)==0)return 0;
+            break;
+        case IDENTIFICADOR:
+            if(comando_identificador(parser)==0)return 0;
+            break;
+        case IF:
+            if(comando_if(parser)==0) return 0;
+            break;
+        case WHILE:
+            if(comando_while(parser)==0) return 0;
+            break;
+        case FOR:
+            if(comando_for(parser)==0) return 0;
+            break;
+        case SWITCH:
+            if(comando_switch(parser)==0) return 0;
+            break;
+        case RETURN:
+            if(comando_return(parser)==0) return 0;
+            break;
+        case BREAK:
+            if(parser->tk->GetType(parser->tk) != FIM_COMANDO){
+                print_error("Esperava-se um FIM_COMANDO", parser->scnr, parser->tk);
+                return 0;
+            }
+            printf("\nFIM_COMANDO encontrado\n");
+            break;
+        case CONTINUE:
+            if(parser->tk->GetType(parser->tk) != FIM_COMANDO){
+                print_error("Esperava-se um FIM_COMANDO", parser->scnr, parser->tk);
+                return 0;
+            }
+            printf("\nFIM_COMANDO encontrado\n");
+            break;
+        case PRINTF:
+            if(chamada_printf(parser)==0) return 0;
+            break;
+        default:
+            print_error("Esperava-se um TIPO, um IDENTIFICADOR, um IF, um WHILE, um FOR, um SWITCH, um RETURN, um BREAK, um CONTINUE ou um PRINTF", parser->scnr, parser->tk);
+            return 0;
+    }
+
+    printf("\nFINALIZANDO: comando\n");
+    return 1;
+}
+
+int chamada_printf(Parser *parser){
+    printf("\nINICIANDO: chamada_printf\n");
+
+    if(parser_next_token(parser) == 0) return 0;
+
+    if(parser->tk->GetType(parser->tk) != PARENTESE_ABRE){
+        print_error("Esperava-se um PARENTESE_ABRE", parser->scnr, parser->tk);
+        return 0;
+    }
+    printf("\nPARENTESE_ABRE encontrado\n");
+
+    if(argumentos(parser)==0) return 0;
+
+    if(parser_next_token(parser) == 0) return 0;
+
+    if(parser->tk->GetType(parser->tk) != PARENTESE_FECHA){
+        print_error("Esperava-se um PARENTESE_FECHA", parser->scnr, parser->tk);
+        return 0;
+    }
+    printf("\nPARENTESE_FECHA encontrado\n");
+
+    if(parser_next_token(parser) == 0) return 0;
+
+    if(parser->tk->GetType(parser->tk) != FIM_COMANDO){
+        print_error("Esperava-se um FIM_COMANDO", parser->scnr, parser->tk);
+        return 0;
+    }
+    printf("\nFIM_COMANDO encontrado\n");
+
+    printf("\nFINALIZANDO: chamada_printf\n");
+    return 1;
+}
+
+int comando_while(Parser *parser){
+    printf("\nINICIANDO: comando_while\n");
+
+    if(parser_next_token(parser) == 0) return 0;
+
+    if(parser->tk->GetType(parser->tk) != PARENTESE_ABRE){
+        print_error("Esperava-se um PARENTESE_ABRE", parser->scnr, parser->tk);
+        return 0;
+    }
+    printf("\nPARENTESE_ABRE encontrado\n");
+
+    if(condicao(parser)==0) return 0;
+
+    if(parser_next_token(parser) == 0) return 0;
+
+    if(parser->tk->GetType(parser->tk) != PARENTESE_FECHA){
+        print_error("Esperava-se um PARENTESE_FECHA", parser->scnr, parser->tk);
+        return 0;
+    }
+    printf("\nPARENTESE_FECHA encontrado\n");
+
+    if(comando(parser)==0) return 0;
+
+    printf("\nFINALIZANDO: comando_while\n");
+    return 1;
+}
+
+int comando_for(Parser *parser){
+    printf("\nINICIANDO: comando_for\n");
+
+    if(parser_next_token(parser) == 0) return 0;
+
+    if(parser->tk->GetType(parser->tk) != PARENTESE_ABRE){
+        print_error("Esperava-se um PARENTESE_ABRE", parser->scnr, parser->tk);
+        return 0;
+    }
+    printf("\nPARENTESE_ABRE encontrado\n");
+
+    if(inicializacao_for(parser)==0) return 0;
+
+    if(parser_next_token(parser) == 0) return 0;
+
+    if(parser->tk->GetType(parser->tk) != FIM_COMANDO){
+        print_error("Esperava-se um FIM_COMANDO", parser->scnr, parser->tk);
+        return 0;
+    }
+    printf("\nFIM_COMANDO encontrado\n");
+
+    if(condicao(parser)==0) return 0;
+
+    if(parser_next_token(parser) == 0) return 0;
+
+    if(parser->tk->GetType(parser->tk) != FIM_COMANDO){
+        print_error("Esperava-se um FIM_COMANDO", parser->scnr, parser->tk);
+        return 0;
+    }
+    printf("\nFIM_COMANDO encontrado\n");
+
+    if(incremento_for(parser)==0) return 0;
+
+    if(parser_next_token(parser) == 0) return 0;
+
+    if(parser->tk->GetType(parser->tk) != PARENTESE_FECHA){
+        print_error("Esperava-se um PARENTESE_FECHA", parser->scnr, parser->tk);
+        return 0;
+    }
+    printf("\nPARENTESE_FECHA encontrado\n");
+
+    if(comando(parser)==0) return 0;
+
+    printf("\nFINALIZANDO: comando_for\n");
+    return 1;
+}
+
+int inicializacao_for(Parser *parser){
+    printf("\nINICIANDO: inicializacao_for\n");
+
+    if(parser_next_token(parser) == 0) return 0;
+
+    TokenType tktp = parser->tk->GetType(parser->tk);
+
+    printf("\nAnalisando token\n");
+    switch(tktp){
+    case TIPO:
+        printf("\nTIPO encontrado\n");
+        if(parser_next_token(parser) == 0) return 0;
+
+        if(parser->tk->GetType(parser->tk) != IDENTIFICADOR){
+            print_error("Esperava-se um IDENTIFICADOR", parser->scnr, parser->tk);
+            return 0;
+        }
+        printf("\nIDENTIFICADOR encontrado\n");
+
+        if(parser_next_token(parser) == 0) return 0;
+
+        if(parser->tk->GetType(parser->tk) != ATRIBUICAO){
+            print_error("Esperava-se um ATRIBUICAO", parser->scnr, parser->tk);
+            return 0;
+        }
+        printf("\nATRIBUICAO encontrado\n");
+        break;
+    case IDENTIFICADOR:
+        printf("\nIDENTIFICADOR encontrado\n");
+        if(parser_next_token(parser) == 0) return 0;
+
+        if(parser->tk->GetType(parser->tk) != ATRIBUICAO){
+            print_error("Esperava-se um ATRIBUICAO", parser->scnr, parser->tk);
+            return 0;
+        }
+        printf("\nATRIBUICAO encontrado\n");
+        break;
+    default:
+        print_error("Esperava-se um TIPO ou um IDENTIFICADOR", parser->scnr, parser->tk);
+        return 0;
+    }
+    if(expressao(parser)==0) return 0;
+    printf("\nFINALIZANDO: inicializacao_for\n");
+    return 1;
+}
+
+int incremento_for(Parser *parser){
+    printf("\nINICIANDO: incremento_for\n");
+
+    if(parser_next_token(parser) == 0) return 0;
+
+    if(parser->tk->GetType(parser->tk) != IDENTIFICADOR){
+        print_error("Esperava-se um IDENTIFICADOR", parser->scnr, parser->tk);
+        return 0;
+    }
+    printf("\nIDENTIFICADOR encontrado\n");
+
+    if(parser_next_token(parser) == 0) return 0;
+
+    if(parser->tk->GetType(parser->tk) != ATRIBUICAO){
+        print_error("Esperava-se um ATRIBUICAO", parser->scnr, parser->tk);
+        return 0;
+    }
+    printf("\nATRIBUICAO encontrado\n");
+    if(expressao(parser)==0) return 0;
+
+    printf("\nFINALIZANDO: incremento_for\n");
+    return 1;
+}
+
+int comando_switch(Parser *parser){
+    printf("\nINICIANDO: comando_switch\n");
+
+    if(parser_next_token(parser) == 0) return 0;
+
+    if(parser->tk->GetType(parser->tk) != PARENTESE_ABRE){
+        print_error("Esperava-se um PARENTESE_ABRE", parser->scnr, parser->tk);
+        return 0;
+    }
+    printf("\nPARENTESE_ABRE encontrado\n");
+
+    if(expressao(parser)==0) return 0;
+
+    if(parser_next_token(parser) == 0) return 0;
+
+    if(parser->tk->GetType(parser->tk) != PARENTESE_FECHA){
+        print_error("Esperava-se um PARENTESE_FECHA", parser->scnr, parser->tk);
+        return 0;
+    }
+    printf("\nPARENTESE_FECHA encontrado\n");
+
+    if(parser_next_token(parser) == 0) return 0;
+
+    if(parser->tk->GetType(parser->tk) != CHAVE_ABRE){
+        print_error("Esperava-se um CHAVE_ABRE", parser->scnr, parser->tk);
+        return 0;
+    }
+    printf("\nCHAVE_ABRE encontrado\n");
+
+    if(lista_cases(parser)==0) return 0;
+
+    if(parser_next_token(parser) == 0) return 0;
+
+    if(parser->tk->GetType(parser->tk) != CHAVE_FECHA){
+        print_error("Esperava-se 3um CHAVE_FECHA", parser->scnr, parser->tk);
+        return 0;
+    }
+    printf("\nCHAVE_FECHA encontrado\n");
+
+
+    printf("\nFINALIZANDO: comando_switch\n");
+    return 1;
+}
+
+int lista_cases(Parser *parser){
+    printf("\nINICIANDO: lista_cases\n");
+
+    if(parser_next_token(parser) == 0) return 0;
+
+    TokenType tktp = parser->tk->GetType(parser->tk);
+
+    printf("\nAnalisando token\n");
+    switch(tktp){
+    case CASE:
+        printf("\nCASE encontrado\n");
+        if(comando_case(parser)==0) return 0;
+        if(lista_cases(parser)==0) return 0;
+        break;
+    case DEFAULT:
+        printf("\nDEFAULT encontrado\n");
+        if(comando_default(parser)==0) return 0;
+        break;
+    default:
+        print_error("Esperava-se um CASE ou um DEFAULT", parser->scnr, parser->tk);
+        return 0;
+    }
+
+    printf("\nFINALIZANDO: lista_cases\n");
+    return 1;
+
+}
+
+int comando_case(Parser *parser){
+    printf("\nINICIANDO: comando_case\n");
+
+    if(valor(parser)==0) return 0;
+
+    if(parser_next_token(parser) == 0) return 0;
+
+    if(parser->tk->GetType(parser->tk) != LABELCOLON){
+        print_error("Esperava-se um LABELCOLON", parser->scnr, parser->tk);
+        return 0;
+    }
+    printf("\nLABELCOLON encontrado\n");
+
+    if(bloco_comandos_case(parser)==0) return 0;
+
+    printf("\nFINALIZANDO: comando_case\n");
+    return 1;
+}
+
+int comando_default(Parser *parser){
+    printf("\nINICIANDO: comando_default\n");
+
+    if(parser_next_token(parser) == 0) return 0;
+
+    if(parser->tk->GetType(parser->tk) != LABELCOLON){
+        print_error("Esperava-se um LABELCOLON", parser->scnr, parser->tk);
+        return 0;
+    }
+    printf("\nLABELCOLON encontrado\n");
+
+    if(bloco_comandos_case(parser)==0) return 0;
+
+
+    printf("\nFINALIZANDO: comando_default\n");
+    return 1;
+}
+
+int bloco_comandos_case(Parser *parser){
+    printf("\nINICIANDO: bloco_comandos_case\n");
+
+    if(parser_next_token(parser) == 0) return 0;
+
+    TokenType tktp = parser->tk->GetType(parser->tk);
+
+    printf("\nAnalisando token\n");
+    switch(tktp){
+        case TIPO:
+            if(declaracao_local(parser)==0) return 0;
+        case IDENTIFICADOR:
+            if(comando_identificador(parser)==0) return 0;
+        case IF:
+            if(comando_if(parser)==0) return 0;
+        case WHILE:
+            if(comando_while(parser)==0) return 0;
+        case FOR:
+            if(comando_for(parser)==0) return 0;
+        case SWITCH:
+            if(comando_switch(parser)==0) return 0;
+        case RETURN:
+            if(comando_return(parser)==0) return 0;
+        case BREAK:
+            if(parser_next_token(parser) == 0) return 0;
+
+            if(parser->tk->GetType(parser->tk) != FIM_COMANDO){
+                print_error("Esperava-se um FIM_COMANDO", parser->scnr, parser->tk);
+                return 0;
+            }
+            printf("\nFIM_COMANDO encontrado\n");
+        case CONTINUE:
+            if(parser_next_token(parser) == 0) return 0;
+
+            if(parser->tk->GetType(parser->tk) != FIM_COMANDO){
+                print_error("Esperava-se um FIM_COMANDO", parser->scnr, parser->tk);
+                return 0;
+            }
+            printf("\nFIM_COMANDO encontrado\n");
+        case PRINTF:
+            if(chamada_printf(parser)==0) return 0;
+        default:
+            print_error("Esperava-se um TIPO, um IDENTIFICADOR, um IF, um WHILE, um FOR, um SWITCH, um RETURN, um BREAK, um CONTINUE ou um PRINTF", parser->scnr, parser->tk);
+            return 0;
+    }
+    if(bloco_comandos_case(parser)==0) return 0;
+    printf("\nFINALIZANDO: bloco_comandos_case\n");
+    return 1;
+}
+
+int comando_return(Parser *parser){
+    printf("\nINICIANDO: comando_return\n");
+
+    if(expressao_return(parser)==0) return 0;
+
+    if(parser_next_token(parser) == 0) return 0;
+
+    if(parser->tk->GetType(parser->tk) != FIM_COMANDO){
+        print_error("Esperava-se um FIM_COMANDO", parser->scnr, parser->tk);
+        return 0;
+    }
+    printf("\nFIM_COMANDO encontrado\n");
+
+    printf("\nFINALIZANDO: comando_return\n");
+    return 1;
+}
+
+int expressao_return(Parser *parser){
+    printf("\nINICIANDO: expressao_return\n");
+
+
+    if(parser_next_token(parser) == 0) return 0;
+
+    TokenType tktp = parser->tk->GetType(parser->tk);
+
+    printf("\nAnalisando token\n");
+    switch(tktp){
+
+    case NUMERO:
+        if(expressao_rest(parser)==0) return 0;
+        break;
+    case STRING:
+        break;
+    case CARACTERE:
+        break;
+    case IDENTIFICADOR:
+        if(expressao_id_return(parser)==0) return 0;
+        break;
+    case PARENTESE_ABRE:
+        if(expressao(parser)==0) return 0;
+        if(parser_next_token(parser) == 0) return 0;
+
+        if(parser->tk->GetType(parser->tk) != PARENTESE_FECHA){
+            print_error("Esperava-se um PARENTESE_FECHA", parser->scnr, parser->tk);
+            return 0;
+        }
+        printf("\nPARENTESE_FECHA encontrado\n");
+
+        if(expressao_rest(parser)==0) return 0;
+        break;
+    }
+
+    printf("\nFINALIZANDO: expressao_return\n");
+    return 1;
+}
+
+int expressao_id_return(Parser *parser){
+    printf("\nINICIANDO: comando_printf\n");
+
+    if(parser_next_token(parser) == 0) return 0;
+
+    TokenType tktp = parser->tk->GetType(parser->tk);
+
+    printf("\nAnalisando token\n");
+    switch(tktp){
+
+    case COLCHETE_ABRE:
+        if(expressao(parser)==0) return 0;
+        if(parser_next_token(parser) == 0) return 0;
+
+        if(parser->tk->GetType(parser->tk) != COLCHETE_FECHA){
+            print_error("Esperava-se um COLCHETE_FECHA", parser->scnr, parser->tk);
+            return 0;
+        }
+        printf("\nPARENTESE_FECHA encontrado\n");
+        break;
+    case PARENTESE_ABRE:
+        if(argumentos(parser)==0) return 0;
+        if(parser_next_token(parser) == 0) return 0;
+
+        if(parser->tk->GetType(parser->tk) != PARENTESE_FECHA){
+            print_error("Esperava-se um PARENTESE_FECHA", parser->scnr, parser->tk);
+            return 0;
+        }
+        printf("\nPARENTESE_FECHA encontrado\n");
+
+        break;
+    default:
+        parser->scnr->UnreadToken(parser->scnr, parser->tk);
+    }
+    if(expressao_rest(parser)==0) return 0;
+    printf("\nFINALIZANDO: comando_printf\n");
+    return 1;
+}
+
+int condicao(Parser *parser){
+    printf("\nINICIANDO: condicao\n");
+    if(expressao(parser)==0) return 0;
+    if(condicao_rest(parser)==0) return 0;
+    printf("\nFINALIZANDO: condicao\n");
+    return 1;
+}
+
+int condicao_rest(Parser *parser){
+    printf("\nINICIANDO: condicao_rest\n");
+    printf("\nFINALIZANDO: condicao_rest\n");
+    return 1;
+}
+
+int expressao(Parser *parser){
+    printf("\nINICIANDO: expressao\n");
+
+    if(parser_next_token(parser) == 0) return 0;
+
+    TokenType tktp = parser->tk->GetType(parser->tk);
+
+    printf("\nAnalisando token\n");
+    switch(tktp){
+    case NUMERO:
+        printf("\nNUMERO encontrado\n");
+        if(expressao_rest(parser)==0) return 0;
+        break;
+    case STRING:
+        printf("\nSTRING encontrado\n");
+        break;
+    case CARACTERE:
+        printf("\nCARACTERE encontrado\n");
+        break;
+    case IDENTIFICADOR:
+        printf("\nIDENTIFICADOR encontrado\n");
+        if(expressao_id(parser)==0) return 0;
+        break;
+    case PARENTESE_ABRE:
+        printf("\nPARENTESE_ABRE encontrado\n");
+        if(expressao(parser)==0) return 0;
+        if(parser_next_token(parser) == 0) return 0;
+
+        if(parser->tk->GetType(parser->tk) != PARENTESE_FECHA){
+            print_error("Esperava-se um PARENTESE_FECHA", parser->scnr, parser->tk);
+            return 0;
+        }
+        printf("\nPARENTESE_FECHA encontrado\n");
+
+        if(expressao_rest(parser)==0) return 0;
+        break;
+    default:
+        print_error("Esperava-se um NUMERO, uma STRING, um CARACTERE, um IDENTIFICADOR ou um PARENTESE_ABRE", parser->scnr, parser->tk);
+        return 0;
+
+    }
+
+    printf("\nFINALIZANDO: expressao\n");
+    return 1;
+}
+
+int expressao_id(Parser *parser){
+    printf("\nINICIANDO: expressao_id\n");
+
+    if(parser_next_token(parser) == 0) return 0;
+
+    TokenType tktp = parser->tk->GetType(parser->tk);
+
+    printf("\nAnalisando token\n");
+    switch(tktp){
+    case COLCHETE_ABRE:
+        printf("\nCOLCHETE_ABRE encontrado\n");
+        if(expressao(parser)==0) return 0;
+        if(parser_next_token(parser) == 0) return 0;
+
+        if(parser->tk->GetType(parser->tk) != COLCHETE_FECHA){
+            print_error("Esperava-se um COLCHETE_FECHA", parser->scnr, parser->tk);
+            return 0;
+        }
+        printf("\nCOLCHETE_FECHA encontrado\n");
+
+        if(expressao_rest(parser)==0)return 0;
+        break;
+    case PARENTESE_ABRE:
+        printf("\nPARENTESE_ABRE encontrado\n");
+        if(argumentos(parser)==0) return 0;
+        if(parser_next_token(parser) == 0) return 0;
+
+        if(parser->tk->GetType(parser->tk) != PARENTESE_FECHA){
+            print_error("Esperava-se um PARENTESE_FECHA", parser->scnr, parser->tk);
+            return 0;
+        }
+        printf("\nPARENTESE_FECHA encontrado\n");
+
+        if(expressao_rest(parser)==0)return 0;
+        break;
+    default:
+        parser->scnr->UnreadToken(parser->scnr, parser->tk);
+        if(expressao_rest(parser)==0) return 0;
+    }
+
+    printf("\nFINALIZANDO: expressao_id\n");
+    return 1;
+}
+
+int expressao_rest(Parser *parser){
+    printf("\nINICIANDO: expressao_rest\n");
+    if(parser_next_token(parser) == 0) return 0;
+    if(parser->tk->GetType(parser->tk) == FIM_COMANDO){
+        printf("\nFINALIZANDO: expressao_rest\n");
+        parser->scnr->UnreadToken(parser->scnr, parser->tk);
+        return 1;
+    }
+    if(parser->tk->GetType(parser->tk) != OPERADOR_MAT){
+        print_error("Esperava-se um OPERADOR_MAT", parser->scnr, parser->tk);
+        return 0;
+    }
+    printf("\nOPERADOR_MAT encontrado\n");
+
+    printf("\nFINALIZANDO: expressao_rest\n");
+    if(expressao(parser)==0) return 0;
+    return 1;
+}
+
+int argumentos(Parser *parser){
+    printf("\nINICIANDO: argumentos\n");
+
+    if(expressao(parser)==0) return 0;
+    if (resto_argumentos(parser)==0) return 0;
+
+    printf("\nFINALIZANDO: argumentos\n");
+    return 1;
+}
+
+int resto_argumentos(Parser *parser){
+    printf("\nINICIANDO: resto_argumentos\n");
+
+    if(parser_next_token(parser) == 0) return 0;
+
+    if(parser->tk->GetType(parser->tk) != SEPARADOR){
+        print_error("Esperava-se um SEPARADOR", parser->scnr, parser->tk);
+        return 0;
+    }
+    printf("\nSEPARADOR encontrado\n");
+
+    if(expressao(parser)==0) return 0;
+    if(resto_argumentos(parser)==0) return 0;
+
+    printf("\nFINALIZANDO: resto_argumentos\n");
+    return 1;
+}
+
+int paramentros(Parser *parser){
+    printf("\nINICIANDO: paramentros\n");
+
+    if(parser_next_token(parser) == 0) return 0;
+
+    if(parser->tk->GetType(parser->tk) != TIPO){
+        print_error("Esperava-se um TIPO", parser->scnr, parser->tk);
+        return 0;
+    }
+    printf("\nTIPO encontrado\n");
+
+    if(lista_parametros(parser)==0) return 0;
+
+    printf("\nFINALIZANDO: paramentros\n");
+
+    return 1;
+}
+
+int lista_parametros(Parser *parser){
+    printf("\nINICIANDO: lista_parametros\n");
+
+    if(parser_next_token(parser) == 0) return 0;
+
+    if(parser->tk->GetType(parser->tk) != IDENTIFICADOR){
+        print_error("Esperava-se um IDENTIFICADOR", parser->scnr, parser->tk);
+        return 0;
+    }
+    printf("\nIDENTIFICADOR encontrado\n");
+
+    if(resto_parametros(parser)==0) return 0;
+
+    printf("\nFINALIZANDO: lista_parametros\n");
+
+    return 1;
+}
+
+int resto_parametros(Parser *parser){
+    printf("\nINICIANDO: resto_parametros\n");
+
+    if(parser_next_token(parser) == 0) return 0;
+
+    if(parser->tk->GetType(parser->tk) == PARENTESE_FECHA){
+
+        parser->scnr->UnreadToken(parser->scnr, parser->tk);
+        return 1;
+    }
+
+    if(parser->tk->GetType(parser->tk) != SEPARADOR){
+        print_error("Esperava-se um SEPARADOR", parser->scnr, parser->tk);
+        return 0;
+    }
+    printf("\nSEPARADOR encontrado\n");
+
+    if(parser_next_token(parser) == 0) return 0;
+
+    if(parser->tk->GetType(parser->tk) != TIPO){
+        print_error("Esperava-se um TIPO", parser->scnr, parser->tk);
+        return 0;
+    }
+    printf("\nTIPO encontrado\n");
+
+    if(parser_next_token(parser) == 0) return 0;
+
+    if(parser->tk->GetType(parser->tk) != IDENTIFICADOR){
+        print_error("Esperava-se um IDENTIFICADOR", parser->scnr, parser->tk);
+        return 0;
+    }
+    printf("\nIDENTIFICADOR encontrado\n");
+
+    if(resto_parametros(parser)==0)return 0;
+
+    printf("\nFINALIZANDO: lista_parametros\n");
+    return 1;
+}
+
+int inicializacao(Parser *parser){
+    printf("\nINICIANDO: inicializacao\n");
+
+    if(parser_next_token(parser) == 0) return 0;
+
+    TokenType tktp = parser->tk->GetType(parser->tk);
+
+
+    printf("\nAnalisando token\n");
+    switch(tktp){
+        case ATRIBUICAO:
+            printf("\nATRIBUICAO encontrada\n");
+            if(valor(parser)==0) return 0;
+            if(resto_declaracao(parser)==0) return 0;
+            break;
+
+        case SEPARADOR:
+            printf("\nSEPARADOR encontrado\n");
+            if(parser_next_token(parser) == 0) return 0;
+            if(parser->tk->GetType(parser->tk) != IDENTIFICADOR){
+                print_error("Esperava-se um IDENTIFICADOR", parser->scnr, parser->tk);
+                return 0;
+            }
+            printf("\nIDENTIFICADOR encontrado\n");
+            if(inicializacao(parser)==0) return 0;
+            break;
+
+        case FIM_COMANDO:
+            printf("\nFIM_COMANDO encontrado\n");
+            break;
+
+        default:
+            print_error("Esperava-se uma ATRIBUICAO, um SEPARADOR ou um FIM_COMANDO", parser->scnr, parser->tk);
+            return 0;
+
+    }
+
+    printf("\nFINALIZANDO: inicializacao\n");
+
+    return 1;
+}
+
+int resto_declaracao(Parser *parser){
+    printf("\nINICIANDO: resto_declaracao\n");
+
+    if(parser_next_token(parser) == 0) return 0;
+
+    TokenType tktp = parser->tk->GetType(parser->tk);
+
+    printf("\nAnalisando token\n");
+    switch(tktp){
+        case FIM_COMANDO:
+            printf("\nFIM_COMANDO encontrado\n");
+            break;
+        case SEPARADOR:
+            printf("\nSEPARADOR encontrado\n");
+            if(parser_next_token(parser) == 0) return 0;
+            if(parser->tk->GetType(parser->tk) != IDENTIFICADOR){
+                print_error("Esperava-se um IDENTIFICADOR", parser->scnr, parser->tk);
+                return 0;
+            }
+            printf("\nIDENTIFICADOR encontrado\n");
+            break;
+        case OPERADOR_REL:
+            printf("\nOPERADOR_REL encontrado\n");
+            if(valor(parser)==0) return 0;
+            if(parser_next_token(parser) == 0) return 0;
+            if(parser->tk->GetType(parser->tk) != FIM_COMANDO){
+                print_error("Esperava-se um FIM_COMANDO", parser->scnr, parser->tk);
+                return 0;
+            }
+            printf("\nFIM_COMANDO encontrado\n");
+            break;
+        case OPERADOR_MAT:
+            printf("\nOPERADOR_MAT encontrado\n");
+            if(valor(parser)==0) return 0;
+            if(resto_declaracao_mat(parser) == 0) return 0;
+            break;
+        default:
+            print_error("Esperava-se um SEPARADOR, um OPERADOR_REL, um OPERADOR_MAT ou um FIM_COMANDO", parser->scnr, parser->tk);
+            return 0;
+    }
+    printf("\nFINALIZANDO: resto_declaracao\n");
+    return 1;
+}
+
+int resto_declaracao_mat(Parser *parser){
+    printf("\nINICIANDO: resto_declaracao_mat\n");
+
+    if(parser_next_token(parser) == 0) return 0;
+
+    TokenType tktp = parser->tk->GetType(parser->tk);
+
+    printf("\nAnalisando token\n");
+    switch(tktp){
+        case FIM_COMANDO:
+            printf("\nFIM_COMANDO encontrado\n");
+            break;
+        case OPERADOR_MAT:
+            printf("\nOPERADOR_MAT encontrado\n");
+            if(valor(parser)==0) return 0;
+            if(resto_declaracao_mat(parser));
+            break;
+        default:
+            print_error("Esperava-se um OPERADOR_MAT ou um FIM_COMANDO", parser->scnr, parser->tk);
+            return 0;
+    }
+    printf("\nFINALIZANDO: resto_declaracao_mat\n");
+    return 1;
+}
+
+int inicializacao_array(Parser *parser){
+    printf("\nINICIANDO: inicializacao_array\n");
+
+    if(parser_next_token(parser) == 0) return 0;
+
+    TokenType tktp = parser->tk->GetType(parser->tk);
+
+    switch(tktp){
+        case ATRIBUICAO:
+            if(parser_next_token(parser) == 0) return 0;
+            if(parser->tk->GetType(parser->tk) != CHAVE_ABRE){
+                print_error("Esperava-se um CHAVE_ABRE", parser->scnr, parser->tk);
+                return 0;
+            }
+            printf("\nCHAVE_ABRE encontrado\n");
+            if(lista_valores(parser)==0) return 0;
+            if(parser_next_token(parser) == 0) return 0;
+            if(parser->tk->GetType(parser->tk) != CHAVE_FECHA){
+                print_error("Esperava-se 4um CHAVE_FECHA", parser->scnr, parser->tk);
+                return 0;
+            }
+            printf("\nCHAVE_FECHA encontrado\n");
+            if(parser_next_token(parser) == 0) return 0;
+            if(parser->tk->GetType(parser->tk) != FIM_COMANDO){
+                print_error("Esperava-se um FIM_COMANDO", parser->scnr, parser->tk);
+                return 0;
+            }
+            printf("\nFIM_COMANDO encontrado\n");
+
+            break;
+        case FIM_COMANDO:
+            printf("\nFIM_COMANDO encontrado\n");
+            break;
+        default:
+            print_error("Esperava-se uma ATRIBUICAO ou um FIM_COMANDO", parser->scnr, parser->tk);
+            return 0;
+    }
+    printf("\nFINALIZANDO: inicializacao_array\n");
+    return 1;
+}
+
+int lista_valores(Parser *parser){
+    printf("\nINICIANDO: lista_valores\n");
+    if(valor(parser)==0) return 0;
+    if(resto_valores(parser)==0) return 0;
+    printf("\nFINALIZANDO: lista_valores\n");
+    return 1;
+}
+
+int resto_valores(Parser *parser){
+
+    printf("\nINICIANDO: resto_valores\n");
+
+    if(parser_next_token(parser) == 0) return 0;
+    if(parser->tk->GetType(parser->tk) == CHAVE_FECHA){
+        parser->scnr->UnreadToken(parser->scnr, parser->tk);
+        return 1;
+    }
+    if(parser->tk->GetType(parser->tk) != SEPARADOR){
+        print_error("Esperava-se um SEPARADOR", parser->scnr, parser->tk);
+        return 0;
+    }
+    printf("\nSEPARADOR encontrado\n");
+    if(valor(parser)==0) return 0;
+    if(resto_valores(parser)==0) return 0;
+    printf("\nFINALIZANDO: resto_valores\n");
+    return 1;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+int parser_init(Parser *parser, char *arquivo){
+
+    printf("\nINICIANDO: ParserInit\n");
+
+    char *preprocessadores[] = {
+        "#include",
+        "#define",
+        NULL
+    };
+    char *tipos[] = {
+        "int",
+        "char",
+        "float",
+        "double",
+        NULL
+    };
+    char *qualificadores[] = {
+        "const",
+        NULL
+    };
+    char *bibliotecas[] = {
+        "<stdlib.h>",
+        "<stdio.h>",
+        NULL
+    };
+
+    Scanner *scanner = CreateScanner(tipos, preprocessadores, qualificadores, bibliotecas);
+    if(!scanner) {
+        fprintf(stderr, "\nFalha ao criar scanner\n");
+        return 0;
+    }
+    if(scanner->ScannerInit(scanner, arquivo)==0) {
+        fprintf(stderr, "\nFalha ao inicializar o scanner\n");
+        return 0;
+    }
+    parser->scnr = scanner;
+    if (!parser->scnr) {
+        fprintf(stderr, "\nFalha ao inicializar scanner do parser\n");
+        return 0;
+    }
+    printf("\nFINALIZANDO: ParserInit\n");
+    return 1;
+}
+
+int TestParser(Parser *parser){
+
+    parser->tk = parser->scnr->NextToken(parser->scnr);
+    printf(parser->tk->ToString(parser->tk));
+    if(parser->tk->GetType(parser->tk) == PREPROCESSADOR){
+        printf("\n\nEssa bomba é pica mesmo\n\n");
+    }
+
+    DestroyToken(parser->tk);
+
+    parser->tk = parser->scnr->NextToken(parser->scnr);
+    printf(parser->tk->ToString(parser->tk));
+    parser->scnr->UnreadToken(parser->scnr, parser->tk);
+    DestroyToken(parser->tk);
+
+    parser->tk = parser->scnr->NextToken(parser->scnr);
+    printf(parser->tk->ToString(parser->tk));
+    parser->scnr->UnreadToken(parser->scnr, parser->tk);
+    DestroyToken(parser->tk);
+
+    parser->tk = parser->scnr->NextToken(parser->scnr);
+    printf(parser->tk->ToString(parser->tk));
+    parser->scnr->UnreadToken(parser->scnr, parser->tk);
+    DestroyToken(parser->tk);
+
+    return 0;
+}
+
+Parser* CreateParser(){
+
+    printf("INICIANDO: CreateParser\n\n");
+    Parser *prsr = calloc(1, sizeof(Parser));
+    if(!prsr) {
+        fprintf(stderr, "Falha ao criar parser\n");
+        return NULL;
+    }
+    prsr->ParserInit = parser_init;
+    prsr->ComecarAnalise = comecar_analise;
+    printf("FINALIZANDO: CreateParser\n\n");
+    return prsr;
+}
+
+void DestroyParser(Parser *parser){
+    if(parser->scnr) DestroyScanner(parser->scnr);
+    if(parser->tk) DestroyToken(parser->tk);
+    free(parser);
+}

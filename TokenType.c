@@ -1,3 +1,5 @@
+#include "TokenType.h"
+/*
 #include <string.h>
 
 typedef enum TokenType{
@@ -47,7 +49,7 @@ typedef enum TokenType{
     ERRO
 
 } TokenType;
-
+*/
 
 int IS_TOKENTYPE(TokenType type){
     switch(type){

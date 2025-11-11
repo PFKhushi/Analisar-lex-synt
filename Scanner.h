@@ -1,3 +1,7 @@
+#ifndef SCANNER_H
+#define SCANNER_H
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include "Token.h"
@@ -19,6 +23,7 @@ typedef struct Scanner{
     void    (*NextChar)(struct Scanner *scanner);////////
     void    (*GetRelational)(struct Scanner *scanner);
     void    (*Back)(struct Scanner *scanner);///////
+    void    (*UnreadToken) (struct Scanner *scanner, Token *token);
 
 } Scanner;
 
@@ -39,3 +44,6 @@ void next_char(Scanner *scanner);
 void back_char_tracker(Scanner *scanner);
 void print_list_reservadas(Scanner *scanner, TokenType tipo);
 void alocar_palavras_reservadas(Scanner *scanner, char **palavras, TokenType tipo);
+void unread_token(Scanner *scanner, Token *token);
+
+#endif // SCANNER_H

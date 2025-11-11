@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "Scanner.h"
+
+#include "Parser.h"
 
 void TestToken();
 void TestScanner();
@@ -11,6 +12,20 @@ int main()
     /// Maria Vitório
     /// Pedro Firmino
 
+    Parser *parser = CreateParser();
+    parser->ParserInit(parser, "ArquivoAnalisar/arquivo_para_analise.c");
+
+    if(parser->ComecarAnalise(parser) == 0){
+        printf("Analise deu errado");
+    }else{
+        printf("Analise deu certo");
+    }
+
+    //TestParser(parser);
+    //printf("agora foi");
+    DestroyParser(parser);
+
+/*
     char *preprocessadores[] = {
         "#include",
         "#define",
@@ -39,6 +54,9 @@ int main()
     scanner->ScannerInit(scanner, "ArquivoAnalisar/arquivo_para_analise.c");
 
     Token *tk;
+
+
+
     do{
         tk = scanner->NextToken(scanner);
         if(tk != NULL){
@@ -50,18 +68,12 @@ int main()
         }
     }while(tk != NULL);
 
+
     DestroyScanner(scanner);
 
-
+*/
     return 0;
 }
-
-
-
-
-
-
-
 
 
 

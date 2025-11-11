@@ -1,32 +1,44 @@
 # depslib dependency file v1.0
-1758053049 source:c:\users\mafia\desktop\estrutura_de_dados_usando_c\lexical_analyser\main.c
+1762821148 source:c:\users\mafia\desktop\estrutura_de_dados_usando_c\lexical_analyser\main.c
 	<stdio.h>
 	<stdlib.h>
+	"Parser.h"
+
+1762759021 source:c:\users\mafia\desktop\estrutura_de_dados_usando_c\lexical_analyser\token.c
+	"Token.h"
+	<stdlib.h>
+	<stdio.h>
+	<string.h>
+	"TokenType.h"
+
+1762758623 c:\users\mafia\desktop\estrutura_de_dados_usando_c\lexical_analyser\tokentype.h
+	<string.h>
+
+1762758987 c:\users\mafia\desktop\estrutura_de_dados_usando_c\lexical_analyser\token.h
+	"TokenType.h"
+	<stdlib.h>
+	<stdio.h>
+	<string.h>
+
+1762758621 source:c:\users\mafia\desktop\estrutura_de_dados_usando_c\lexical_analyser\tokentype.c
+	"TokenType.h"
+	<string.h>
+
+1762825337 source:c:\users\mafia\desktop\estrutura_de_dados_usando_c\lexical_analyser\scanner.c
 	"Scanner.h"
-
-1758051543 source:c:\users\mafia\desktop\estrutura_de_dados_usando_c\lexical_analyser\token.c
-	<stdlib.h>
-	<stdio.h>
-	<string.h>
-	"TokenType.h"
-
-1758045266 c:\users\mafia\desktop\estrutura_de_dados_usando_c\lexical_analyser\tokentype.h
-	<string.h>
-
-1757572946 c:\users\mafia\desktop\estrutura_de_dados_usando_c\lexical_analyser\token.h
-	"TokenType.h"
-
-1758049365 source:c:\users\mafia\desktop\estrutura_de_dados_usando_c\lexical_analyser\tokentype.c
-	<string.h>
-
-1758052595 source:c:\users\mafia\desktop\estrutura_de_dados_usando_c\lexical_analyser\scanner.c
 	<stdio.h>
 	<stdlib.h>
 	<string.h>
 	"Token.h"
 
-1758052594 c:\users\mafia\desktop\estrutura_de_dados_usando_c\lexical_analyser\scanner.h
+1762820133 c:\users\mafia\desktop\estrutura_de_dados_usando_c\lexical_analyser\scanner.h
 	<stdio.h>
 	<stdlib.h>
 	"Token.h"
+
+1762825363 source:c:\users\mafia\desktop\estrutura_de_dados_usando_c\lexical_analyser\parser.c
+	"Parser.h"
+
+1762833649 c:\users\mafia\desktop\estrutura_de_dados_usando_c\lexical_analyser\parser.h
+	"Scanner.h"
 

@@ -1,3 +1,6 @@
+#include "Scanner.h"
+
+/*
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -22,6 +25,7 @@ typedef struct Scanner{
     void    (*Back)(struct Scanner *scanner);///////
 
 } Scanner;
+*/
 
 int scanner_init(Scanner *scanner, char* file_name){
     scanner->file_pointer = fopen(file_name, "r");
@@ -36,7 +40,6 @@ Token* next_token(Scanner *scanner){
     scanner->state = 0;
     scanner->inner_state = 0;
     Token *tk = CreateToken(); /// Lembrar de destruir antes de sair da funcao quando for retornar outro.
-
     while(scanner->character != EOF){
 
         scanner->linha++;
@@ -579,6 +582,19 @@ void alocar_palavras_reservadas(Scanner *scanner, char **palavras, TokenType tip
 
 }
 
+void unread_token(Scanner *scanner, Token *token) {
+    if (scanner == NULL || token == NULL || token->text == NULL)
+        return;
+
+    size_t len = strlen(token->text);
+    if (fseek(scanner->file_pointer, -((long)len), SEEK_CUR) != 0) {
+        perror("Erro ao retroceder no arquivo");
+    }
+
+    scanner->character = fgetc(scanner->file_pointer);
+    ungetc(scanner->character, scanner->file_pointer);
+}
+
 
 Scanner* CreateScanner(char** tipos, char** preprocessadores, char** qualificadores, char** bibliotecas){
 
@@ -614,6 +630,7 @@ Scanner* CreateScanner(char** tipos, char** preprocessadores, char** qualificado
     scanner->GetTokenDone   = get_token_done;
     scanner->NextChar       = next_char;
     scanner->Back           = back_char_tracker;
+    scanner->UnreadToken    = unread_token;
 
     scanner->file_pointer = NULL;
     scanner->character = '\0';
